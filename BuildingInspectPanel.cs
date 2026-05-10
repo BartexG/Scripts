@@ -11,6 +11,7 @@ public class BuildingInspectPanel : MonoBehaviour
     [SerializeField] private GameObject panel;
 
     [SerializeField] private GameObject demolishButton;
+    [SerializeField] private GameObject buildUnitsButton;
 
     FinishedBuilding targetBuilding;
 
@@ -19,6 +20,7 @@ public class BuildingInspectPanel : MonoBehaviour
     private bool opened = false;
     private bool miningActive = false;
 
+    private bool isFactory = false;
 
     public void OpenPanel(FinishedBuilding fb)
     {
@@ -36,10 +38,23 @@ public class BuildingInspectPanel : MonoBehaviour
         if(targetBuilding.CheckBuildingType("mine"))
         {
             miningBar.gameObject.SetActive(true);
+            miningBar.GetComponentInChildren<TMPro.TextMeshProUGUI>().text = "Mining...";
             miningActive = true;
+            isFactory = false;
         }
         else
         {
+            isFactory = targetBuilding.CheckBuildingType("factory");
+
+            if(isFactory)
+            {
+                buildUnitsButton.SetActive(true);
+            }
+            else
+            {
+                buildUnitsButton.SetActive(false);
+            }
+
             miningBar.gameObject.SetActive(false);
             miningActive = false;
         }
@@ -47,6 +62,7 @@ public class BuildingInspectPanel : MonoBehaviour
 
     public void ClosePanel()
     {
+        FindAnyObjectByType<UnitRecruitPanel>().Close();
         panel.SetActive(false);
         opened = false;
     }
@@ -74,6 +90,27 @@ public class BuildingInspectPanel : MonoBehaviour
                 miningBar.maxValue = targetBuilding.GetComponent<Mine>().getMiningSpeed();
                 miningBar.value = targetBuilding.GetComponent<Mine>().getTimeLeft();
             }
+
+            if(isFactory)
+            {
+                if(targetBuilding.GetComponent<Factory>().isRecruiting())
+                {
+                    miningBar.gameObject.SetActive(true);
+                    miningBar.GetComponentInChildren<TMPro.TextMeshProUGUI>().text = "Assembling...";
+                    miningBar.maxValue = targetBuilding.GetComponent<Factory>().getAssemblySpeed();
+                    miningBar.value = targetBuilding.GetComponent<Factory>().getTimeLeft();
+                }
+                else
+                {
+                    miningBar.gameObject.SetActive(false);
+                }
+            }
+
         }
+    }
+
+    public FinishedBuilding getTargetBuilding()
+    {
+        return targetBuilding;
     }
 }

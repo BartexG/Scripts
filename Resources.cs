@@ -79,6 +79,11 @@ public class Resources : MonoBehaviour
         UpdateUI();
     }
 
+    public int getOil()
+    {
+        return oil;
+    }
+
     public void SellResource(int resID, float price)
     {
         float sellValue = 0;

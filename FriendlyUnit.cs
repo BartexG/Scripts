@@ -9,10 +9,23 @@ public class FriendlyUnit : Unit
 
     [SerializeField] private bool militaryUnit = false;
 
+    [SerializeField] private int price = 10;
+
     bool unitSelected = false;
+
+    [SerializeField] private bool hardSpawn = false;
+
+    void Start()
+    {
+        if(hardSpawn)
+        {
+            OnSpawn();
+        }
+    }
 
     public override void OnSpawn()
     {
+        base.OnSpawn();
         agent = GetComponent<NavMeshAgent>();
         ChangeUnitSelect(false);
         FindAnyObjectByType<UnitSelectionManager>().AddUnit(gameObject);
@@ -43,6 +56,11 @@ public class FriendlyUnit : Unit
         }
     }
 
+    public void MoveForward(float multiplier)
+    {
+        agent.SetDestination(transform.position + transform.forward);
+    }
+
     public void SetDestination(Vector3 point)
     {
         agent.SetDestination(point);
@@ -55,5 +73,10 @@ public class FriendlyUnit : Unit
     public override void OnDeath()
     {
         FindAnyObjectByType<UnitSelectionManager>().RemoveUnit(gameObject);
+    }
+
+    public override int getPrice()
+    {
+        return price;
     }
 }

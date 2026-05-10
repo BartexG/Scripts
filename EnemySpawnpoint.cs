@@ -71,6 +71,7 @@ public class EnemySpawnpoint : MonoBehaviour
     public void SpawnEnemy(GameObject enemy, Transform enemySpawnpoint)
     {
         GameObject newEnemy = Instantiate(enemy, enemySpawnpoint.position, enemySpawnpoint.rotation);
+        newEnemy.GetComponent<EnemyUnit>().OnSpawn();
     }
     
 }

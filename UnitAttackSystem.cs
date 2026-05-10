@@ -96,13 +96,10 @@ public class UnitAttackSystem : MonoBehaviour
     {
         Vector3 targetDirection = attackTarget.transform.position - transform.position;
 
-        // The step size is equal to speed times frame time.
         float singleStep = 3 * Time.deltaTime;
 
-        // Rotate the forward vector towards the target direction by one step
         Vector3 newDirection = Vector3.RotateTowards(transform.forward, targetDirection, singleStep, 0.0f);
 
-        // Calculate a rotation a step closer to the target and applies rotation to this object
         transform.rotation = Quaternion.LookRotation(newDirection);
     }
 
@@ -122,5 +119,16 @@ public class UnitAttackSystem : MonoBehaviour
     public GameObject getAttackTarget()
     {
         return attackTarget;
+    }
+
+    public string getDescription()
+    {
+        string desc = "";
+
+        desc += "\nRange: " + attackRange;
+        desc += "\nDamage: " + damage;
+        desc += "\nAttack speed: " + (1/attackCooldown) + "/s";
+
+        return desc;
     }
 }

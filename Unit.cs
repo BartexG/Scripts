@@ -2,18 +2,16 @@ using UnityEngine;
 
 public class Unit : MonoBehaviour
 {
+    [SerializeField] private string unitName; 
     [SerializeField] protected int maxHp = 100;
     protected int hp;
     [SerializeField] protected HpBar hpBar;
 
-    void Start()
+    public virtual void OnSpawn()
     {
         hp = maxHp;
         hpBar.SetValues(maxHp,hp);
-        OnSpawn();
     }
-
-    public virtual void OnSpawn() {}
 
     public void TakeDamage(int value)
     {
@@ -37,5 +35,28 @@ public class Unit : MonoBehaviour
     }
 
     public virtual void OnDeath(){}
+
+    public string getDescription()
+    {
+        string desc = "Hp: " + maxHp;
+
+        UnitAttackSystem uas = gameObject.GetComponent<UnitAttackSystem>();
+
+        desc += uas.getDescription();
+
+        return desc;
+    }
+
+    public string getUnitName()
+    {
+        return unitName;
+    }
+
+    public virtual int getPrice()
+    {
+        return 0;
+    }
+
+
 
 }

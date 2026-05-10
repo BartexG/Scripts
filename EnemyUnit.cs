@@ -10,6 +10,7 @@ public class EnemyUnit : Unit
 
     public override void OnSpawn()
     {
+        base.OnSpawn();
         agent = GetComponent<NavMeshAgent>();
         if(active)
         {
