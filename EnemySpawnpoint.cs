@@ -42,7 +42,7 @@ public class EnemySpawnpoint : MonoBehaviour
             enemies.Add(newEnemies[i]);
         }
 
-        activeSpawnMark.SetActive(true);
+        activeSpawnMark.GetComponent<AlarmBeacon>().SwitchActiveState(true); 
     }
 
     public void SpawnWave()
@@ -64,7 +64,7 @@ public class EnemySpawnpoint : MonoBehaviour
         if(enemyCount >= enemies.Count)
         {
             spawning = false;
-            activeSpawnMark.SetActive(false);   
+            activeSpawnMark.GetComponent<AlarmBeacon>().SwitchActiveState(false); 
         }
     }
 

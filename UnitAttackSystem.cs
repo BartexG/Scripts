@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.AI;
+using System;
 
 public class UnitAttackSystem : MonoBehaviour
 {
@@ -127,7 +128,7 @@ public class UnitAttackSystem : MonoBehaviour
 
         desc += "\nRange: " + attackRange;
         desc += "\nDamage: " + damage;
-        desc += "\nAttack speed: " + (1/attackCooldown) + "/s";
+        desc += "\nAttack speed: " +  Math.Round(1/attackCooldown,2) + "/s";
 
         return desc;
     }

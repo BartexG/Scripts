@@ -10,10 +10,16 @@ public class Building : MonoBehaviour
     [SerializeField] private bool simple = false;
     [SerializeField] private GameObject targetBuildingModel;
 
-
     public bool canBuildOnOres = false;
 
+    private int collidingObjects = 0;
+
     private float gridSize = 1f;
+
+    void Start()
+    {
+        collidingObjects = 0;
+    }
 
     public float getYMod()
     {
@@ -51,13 +57,15 @@ public class Building : MonoBehaviour
 
     public void UpdateMaterial(Tile tile)
     {
-        if(CheckIfTilesAreEmpty(tile))
-        {
-            ChangeMaterial(FindAnyObjectByType<BuildingSystem>().buildingCorrect);
-        }
-        else
-        {
-            ChangeMaterial(FindAnyObjectByType<BuildingSystem>().buildingWrong);
+        if(collidingObjects == 0) {
+            if(CheckIfTilesAreEmpty(tile))
+            {
+                ChangeMaterial(FindAnyObjectByType<BuildingSystem>().buildingCorrect);
+            }
+            else
+            {
+                ChangeMaterial(FindAnyObjectByType<BuildingSystem>().buildingWrong);
+            }
         }
     }
 
@@ -104,6 +112,34 @@ public class Building : MonoBehaviour
         {
             return 1.5f*sizeY;
         }
+    }
+
+    void OnTriggerEnter(Collider other)
+    {
+        if(other.tag == "Ally" || other.tag == "Obstacle")
+        {
+            collidingObjects++;
+            ChangeMaterial(FindAnyObjectByType<BuildingSystem>().buildingWrong);
+        }
+    }
+
+    void OnTriggerExit(Collider other)
+    {
+        if(other.tag == "Ally" || other.tag == "Obstacle")
+        {
+            collidingObjects--;
+            if(collidingObjects <= 0)
+            {
+                collidingObjects = 0;
+                ChangeMaterial(FindAnyObjectByType<BuildingSystem>().buildingWrong);
+            }
+        }
+    }
+
+
+    public bool isBuildingLocked()
+    {
+        return collidingObjects > 0;
     }
 
 }

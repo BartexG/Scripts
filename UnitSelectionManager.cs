@@ -10,16 +10,32 @@ public class UnitSelectionManager : MonoBehaviour
     [SerializeField] private LayerMask clickable;
     [SerializeField] private LayerMask ground;
 
+    public int miningUnitsLimit = 3;
+    private int miningUnits;
+    public int militaryUnitsLimit = 5;
+    private int militaryUnits;
+
+    [SerializeField] private TMPro.TextMeshProUGUI miningUnitLimitText;
+    [SerializeField] private TMPro.TextMeshProUGUI militaryUnitLimitText;
 
     void Start()
     {
+        miningUnits = 0;
+        militaryUnits = 0;
         selectedUnits = new List<GameObject>();
         cam = Camera.main;
+        UpdateUnitLimitTexts();
+    }
+
+    public void UpdateUnitLimitTexts()
+    { 
+        miningUnitLimitText.text = "Mining drones: " + miningUnits + "/" + miningUnitsLimit;
+        militaryUnitLimitText.text = "Tanks: " + militaryUnits + "/" + militaryUnitsLimit;
     }
 
     void Update()
     {
-        if(Input.GetMouseButtonDown(0))
+        if(Input.GetMouseButtonDown(0) && !FindAnyObjectByType<BuildingSystem>().isBuildingActive())
         {
             RaycastHit hit;
             Ray ray = cam.ScreenPointToRay(Input.mousePosition);
@@ -49,6 +65,17 @@ public class UnitSelectionManager : MonoBehaviour
             if(Physics.Raycast(ray, out hit, Mathf.Infinity, clickable) && hit.transform.tag == "Enemy")
             {
                 SetTargetSelectedUnits(hit.collider.gameObject);
+            }
+            else if(Physics.Raycast(ray, out hit, Mathf.Infinity, clickable) && hit.transform.tag == "Ore")
+            {
+                if(selectedUnits.Count == 1 && !hit.transform.gameObject.GetComponent<Ore>().isMined()) 
+                {
+                    SetTargetOreForMiningUnits(hit.collider.gameObject);
+                }
+                else
+                {
+                    FindAnyObjectByType<ErrorInfoText>().ShowError("Max one unit per crystal!",hit.transform.position);
+                }
             }
             else if(Physics.Raycast(ray, out hit, Mathf.Infinity, ground))
             {
@@ -94,6 +121,17 @@ public class UnitSelectionManager : MonoBehaviour
         }
     }
 
+    public void SetTargetOreForMiningUnits(GameObject target)
+    {
+        for(int i = 0; i < selectedUnits.Count; i++)
+        {
+            if(selectedUnits[i].GetComponent<FriendlyUnit>().getUnitType() == FriendlyUnit.friendlyUnitType.MINING) 
+            {
+                selectedUnits[i].GetComponent<MiningUnit>().SetMiningTarget(target);
+            }
+        }
+    }
+
     public void SetTargetSelectedUnits(GameObject target)
     {
         for(int i = 0; i < selectedUnits.Count; i++)
@@ -113,6 +151,15 @@ public class UnitSelectionManager : MonoBehaviour
     public void AddUnit(GameObject unit)
     {
         allUnits.Add(unit);
+        if(unit.GetComponent<FriendlyUnit>().getUnitType() == FriendlyUnit.friendlyUnitType.MILITARY)
+        {
+            militaryUnits++;
+        }
+        else
+        {
+            miningUnits++;
+        }
+        UpdateUnitLimitTexts();
     }
 
     public void RemoveUnit(GameObject unit)
@@ -120,10 +167,30 @@ public class UnitSelectionManager : MonoBehaviour
         if(selectedUnits.Contains(unit)) selectedUnits.Remove(unit);
 
         allUnits.Remove(unit);
+
+        if(unit.GetComponent<FriendlyUnit>().getUnitType() == FriendlyUnit.friendlyUnitType.MILITARY)
+        {
+            militaryUnits--;
+        }
+        else
+        {
+            miningUnits--;
+        }
+        UpdateUnitLimitTexts();
     }
 
     public List<GameObject> getAllUnits()
     {
         return allUnits;
+    }
+
+    public bool canRecruitMiningUnit()
+    {
+        return miningUnits < miningUnitsLimit;
+    }
+
+    public bool canRecruitMilitaryUnit()
+    {
+        return militaryUnits < militaryUnitsLimit;
     }
 }

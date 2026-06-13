@@ -11,7 +11,6 @@ public class Resources : MonoBehaviour
     [SerializeField] private int starterOil = 100;
     int oil = 0;
     [SerializeField] private TMPro.TextMeshProUGUI oilText;
-    //int researchPoints = 0;
 
     int yellowOre = 0;
     [SerializeField] private TMPro.TextMeshProUGUI yellowOreText;
@@ -53,7 +52,7 @@ public class Resources : MonoBehaviour
         UpdateUI();
     }
 
-    //Zmienić resID na enum, tablica?
+    //Zmienić resID na enum
     public void ChangeResource(int resID, int value)
     {
         switch(resID)
@@ -77,6 +76,22 @@ public class Resources : MonoBehaviour
         }
 
         UpdateUI();
+    }
+
+    public bool CheckForResource(int resID, int value)
+    {
+        switch(resID)
+        {
+            case 1:
+                return oil >= value;
+            case 2:
+                return yellowOre >= value;
+            case 3:
+                return redOre >= value;
+            case 4:
+                return blueOre >= value;
+        }
+        return false;
     }
 
     public int getOil()

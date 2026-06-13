@@ -89,7 +89,8 @@ public class BuildingSystem : MonoBehaviour
 
     public bool CheckIfCanBuild(Tile tile)
     {
-        return buildingToBuild.GetComponent<Building>().CheckIfTilesAreEmpty(tile);
+        Building building = buildingToBuild.GetComponent<Building>();
+        return building.CheckIfTilesAreEmpty(tile) && !building.isBuildingLocked();
     }
 
     public bool CheckIfCanBuildOnOres()

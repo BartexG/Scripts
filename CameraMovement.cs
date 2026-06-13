@@ -1,12 +1,12 @@
 using UnityEngine;
-using UnityEngine.EventSystems;
 
 public class CameraMovement : MonoBehaviour
 {
     public static CameraMovement instance;
     Vector3 newPosition;
+    Vector3 defaultPosition;
   
-    [Header("Keyboard Movement")]
+    [Header("Movement Speed")]
     [SerializeField] float fastSpeed = 0.05f;
     [SerializeField] float normalSpeed = 0.01f;
     [SerializeField] float movementSensitivity = 1f;
@@ -16,14 +16,20 @@ public class CameraMovement : MonoBehaviour
     [SerializeField] float minHeight = 10;
     [SerializeField] float maxHeight = 70;
 
+    bool controledByPlayer = true;
+
+    float autoMoveSpeed = 1;
 
     private void Start()
     {
         instance = this;
- 
+
+        defaultPosition = transform.position;
         newPosition = transform.position;
  
         movementSpeed = normalSpeed;
+
+        controledByPlayer = true;
     }
  
     private void Update()
@@ -33,6 +39,18 @@ public class CameraMovement : MonoBehaviour
 
     void HandleCameraMovement()
     {
+        if(!controledByPlayer)
+        {
+            if(transform.position != defaultPosition) 
+            {
+                transform.position = Vector3.MoveTowards(transform.position, defaultPosition, Time.deltaTime * autoMoveSpeed);
+                if(transform.position == defaultPosition)
+                {
+                    FindAnyObjectByType<GameManage>().OnCameraDestReach();
+                }
+            }
+            return;
+        }
 
         if (Input.GetKey(KeyCode.C))
         {
@@ -115,5 +133,37 @@ public class CameraMovement : MonoBehaviour
     {
         Vector3 modVector = transform.forward * -movementSpeed * 2;
         if(CheckIfNewPosIsInBoundsY(modVector)) newPosition += modVector;
+    }
+
+    public void ResetPosition()
+    {
+        transform.position = defaultPosition;
+        newPosition = defaultPosition;
+    }
+
+    public void SwitchControl(bool value)
+    {
+        controledByPlayer = value;
+    }
+
+    public void OnEndGame()
+    {
+        SwitchControl(false);
+
+        if(transform.position == defaultPosition)
+        {
+            FindAnyObjectByType<GameManage>().OnCameraDestReach();
+            return;
+        }
+
+        float xDif = Mathf.Abs(transform.position.x - defaultPosition.x);
+        float yDif = Mathf.Abs(transform.position.y - defaultPosition.y);
+        float zDif = Mathf.Abs(transform.position.z - defaultPosition.z);
+
+        float maxDif = xDif;
+        if(yDif > maxDif) maxDif = yDif;
+        if(zDif > maxDif) maxDif = zDif;
+
+        autoMoveSpeed = 1/(2 / maxDif);
     }
 }

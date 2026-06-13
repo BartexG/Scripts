@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class TileObject : MonoBehaviour
 {
-    [SerializeField] private string objectType;
+    protected string objectType;
 
     public virtual void OnSpawn()
     {
@@ -12,6 +12,11 @@ public class TileObject : MonoBehaviour
     public bool CheckIfObjectOfType(string type)
     {
         return objectType == type;
+    }
+
+    public string getObjectType()
+    {
+        return objectType;
     }
 
 }

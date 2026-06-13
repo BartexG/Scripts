@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class Factory : FinishedBuilding
@@ -6,13 +7,16 @@ public class Factory : FinishedBuilding
 
     private float timer = 0;
 
-    private GameObject recruitedUnit;
-
+    private List<GameObject> recruitedUnits;
+    const int MAX_QUEUE_SIZE = 4;
+    
     [SerializeField] private Transform newUnitSpawn;
+
+    [SerializeField] private GameObject[] availableUnits;
 
     protected override void AfterSpawn(Tile tile)
     {
-        recruitedUnit = null;
+        recruitedUnits = new List<GameObject>();
         timer = 0;
     }
 
@@ -32,16 +36,20 @@ public class Factory : FinishedBuilding
 
     public void StartRecruitingUnit(GameObject newUnit)
     {
-        recruitedUnit = newUnit;
-        timer = 0;
+        if(recruitedUnits.Count < MAX_QUEUE_SIZE) 
+        {
+            if(!isRecruiting())timer = 0;
+
+            recruitedUnits.Add(newUnit);
+        }
     }
 
     public void RecruitUnit()
     {
-        GameObject newUnit = Instantiate(recruitedUnit, newUnitSpawn.position, newUnitSpawn.rotation);
+        GameObject newUnit = Instantiate(recruitedUnits[0], newUnitSpawn.position, newUnitSpawn.rotation);
         newUnit.GetComponent<FriendlyUnit>().OnSpawn();
         newUnit.GetComponent<FriendlyUnit>().MoveForward(1);
-        recruitedUnit = null;
+        recruitedUnits.RemoveAt(0);
     }
 
     public float getTimeLeft()
@@ -56,6 +64,16 @@ public class Factory : FinishedBuilding
 
     public bool isRecruiting()
     {
-        return recruitedUnit != null;
+        return recruitedUnits.Count > 0;
+    }
+
+    public GameObject[] getAvailableUnits()
+    {
+        return availableUnits;
+    }
+
+    public List<GameObject> getRecruitedUnits()
+    {
+        return recruitedUnits;
     }
 }

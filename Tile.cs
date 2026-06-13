@@ -39,9 +39,10 @@ public class Tile : MonoBehaviour
 
         if(tileObject != null)
         {
-            if(buildingSystem.CheckIfCanBuildOnOres() && tileObject.GetComponent<TileObject>().CheckIfObjectOfType("ore")) return true;
+            if(buildingSystem.CheckIfCanBuildOnOres() && tileObject.GetComponent<TileObject>().CheckIfObjectOfType("oil")) return true;
             else return false;
         }
+        else if(buildingSystem.CheckIfCanBuildOnOres()) return false;
 
         return true;
     }
@@ -102,7 +103,8 @@ public class Tile : MonoBehaviour
     {
         if(tileObject != null)
         {
-            if(tileObject.GetComponent<TileObject>().CheckIfObjectOfType("ore"))
+            string type = tileObject.GetComponent<TileObject>().getObjectType();
+            if(type == "ore" || type == "oil")
             {
                 return tileObject.GetComponent<Ore>();
             }

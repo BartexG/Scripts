@@ -40,9 +40,15 @@ public class Unit : MonoBehaviour
     {
         string desc = "Hp: " + maxHp;
 
-        UnitAttackSystem uas = gameObject.GetComponent<UnitAttackSystem>();
-
-        desc += uas.getDescription();
+        if(gameObject.GetComponent<FriendlyUnit>().getUnitType() == FriendlyUnit.friendlyUnitType.MILITARY) 
+        {
+            UnitAttackSystem uas = gameObject.GetComponent<UnitAttackSystem>();
+            desc += uas.getDescription();
+        }
+        else if(gameObject.GetComponent<FriendlyUnit>().getUnitType() == FriendlyUnit.friendlyUnitType.MINING)
+        {
+            desc += gameObject.GetComponent<MiningUnit>().getMiningUnitDescription();
+        }
 
         return desc;
     }

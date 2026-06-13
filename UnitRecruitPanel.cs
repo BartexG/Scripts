@@ -7,13 +7,23 @@ public class UnitRecruitPanel : MonoBehaviour
     [SerializeField] private TMPro.TextMeshProUGUI nameText;
     [SerializeField] private TMPro.TextMeshProUGUI descriptionText;
     [SerializeField] private TMPro.TextMeshProUGUI priceText;
+    [SerializeField] private UnitRecruitButton[] unitRecruitButtons;
 
     public void Open()
     {
-        if(!FindAnyObjectByType<BuildingInspectPanel>().getTargetBuilding().GetComponent<Factory>().isRecruiting()) 
+        Factory targetFactory = FindAnyObjectByType<BuildingInspectPanel>().getTargetBuilding().GetComponent<Factory>();
+        panel.SetActive(true);
+        CloseInfoPanel();
+
+        for(int i = 0; i < targetFactory.getAvailableUnits().Length; i++)
         {
-            panel.SetActive(true);
-            CloseInfoPanel();
+            unitRecruitButtons[i].gameObject.SetActive(true);
+            unitRecruitButtons[i].SetUnit(targetFactory.getAvailableUnits()[i]);
+        }
+
+        for(int i = targetFactory.getAvailableUnits().Length; i < unitRecruitButtons.Length; i++)
+        {
+            unitRecruitButtons[i].gameObject.SetActive(false);
         }
     }
 

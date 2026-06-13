@@ -4,16 +4,20 @@ using UnityEngine;
 public class EnemySpawner : MonoBehaviour
 {
     public EnemySpawnpoint[] enemySpawnpoints;
+    public int timeBetweenWaves = 60;
 
     [SerializeField] private EnemyWave[] enemyWaves;
     [SerializeField] private TMPro.TextMeshProUGUI wavesText;
     [SerializeField] private TMPro.TextMeshProUGUI waveCountdownText;
+    [SerializeField] private GameObject waveSpawnButton;
 
     int wave = 0;
+    float timer = 0;
 
     private List<int> tunnelsUsed;
 
     int spawnedEnemies = 0;
+    bool waveActive = false;
 
     void Start()
     {
@@ -69,6 +73,12 @@ public class EnemySpawner : MonoBehaviour
         }
     }
 
+    public void SpawnWaveFaster()
+    {
+        FindAnyObjectByType<Resources>().ChangeMoney(Mathf.RoundToInt(timeBetweenWaves - timer)*10);
+        OnCountDownEnd();
+    }
+
     public void ChangeSpawnedEnemies(int value)
     {
         spawnedEnemies += value;
@@ -82,7 +92,33 @@ public class EnemySpawner : MonoBehaviour
             else
             {
                 LoadNextWave();
+                waveActive = false;
+                waveCountdownText.gameObject.SetActive(true);
+                waveSpawnButton.SetActive(true);
             }
         }
+    }
+
+    void Update()
+    {
+        if(!waveActive)
+        {
+            timer += Time.deltaTime;
+            waveCountdownText.text = "Next wave in: " + Mathf.RoundToInt(timeBetweenWaves - timer);
+
+            if(timer >= timeBetweenWaves)
+            {
+                OnCountDownEnd();
+            }
+        }
+    }
+    
+    void OnCountDownEnd()
+    {
+        timer = 0;
+        SpawnWave();
+        waveActive = true;
+        waveCountdownText.gameObject.SetActive(false);
+        waveSpawnButton.SetActive(false);
     }
 }

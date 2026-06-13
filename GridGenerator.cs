@@ -14,24 +14,29 @@ public class GridGenerator : MonoBehaviour
     private List<GameObject> gridTiles;
 
     [Header("Ores")]
-    [SerializeField] private GameObject[] ores; //red,yellow,blue
+    [SerializeField] private GameObject[] ores; //red,yellow,blue,oil
     [SerializeField] private int[] orePosX;
     [SerializeField] private int[] orePosY;
+    [SerializeField] private int distinctOreCount = 2;
 
-
-    [SerializeField] private Transform obstaclesSpawn;
+    [SerializeField] private int[] oilPosX;
+    [SerializeField] private int[] oilPosY;
 
     [SerializeField] private Building hub;
+    [SerializeField] private Building teleporter;
 
     private GameObject spawnedHub;
+
+    private List<GameObject> spawnedOres;
 
     void Start()
     {
         GenerateGrid();
         SwitchGridVisibility(false);
         SpawnOres();
-
-        spawnedHub = FindAnyObjectByType<BuildingSystem>().SpawnStarterBuilding(hub, getTile(25,25), this);
+        spawnedHub = FindAnyObjectByType<BuildingSystem>().SpawnStarterBuilding(hub, getTile(40,40), this);
+        GameObject spawnedTeleport = FindAnyObjectByType<BuildingSystem>().SpawnStarterBuilding(teleporter, getTile(38,34), this);
+        spawnedTeleport.transform.Rotate(new Vector3(0,180,0));
     }
 
     public GameObject getSpawnedHub()
@@ -110,77 +115,61 @@ public class GridGenerator : MonoBehaviour
             {
                 gridTiles[i].GetComponent<Tile>().UpdateMaterial();
             }
-
-            //gridTiles[i].SetActive(value);
-            //gridTiles[i].GetComponent<Tile>().UpdateMaterial();
         }
     }
 
     public void SpawnOres()
     {
+        spawnedOres = new List<GameObject>();
+
+        List<int> xPositions = new List<int>();
+        List<int> yPositions = new List<int>();
+
         for(int i = 0; i < orePosX.Length; i++)
         {
+            xPositions.Add(orePosX[i]);
+            yPositions.Add(orePosY[i]);
+        }
+
+        for(int i = 0; i < distinctOreCount*3; i++)
+        {
             int a = i % 3;
-            //SpawnObject(ores[a], getTile(orePosX[a], orePosY[a]));
-            GenerateOre(orePosX[a],orePosY[a],ores[a],3);
+            int rndPos = Random.Range(0, xPositions.Count);
+
+            GameObject spawnedOre = GenerateOre(xPositions[rndPos],yPositions[rndPos],ores[a]);
+            xPositions.RemoveAt(rndPos);
+            yPositions.RemoveAt(rndPos);
+            if(spawnedOre != null) spawnedOres.Add(spawnedOre);
+        }
+
+        for(int i = 0; i < oilPosX.Length; i++)
+        {
+            GameObject newOilDepostit = GenerateOre(oilPosX[i], oilPosY[i], ores[3]);
+            if(newOilDepostit != null) spawnedOres.Add(newOilDepostit);
         }
     }
 
-    void GenerateOre(int x, int y, GameObject ore, int maxRange)
+    GameObject GenerateOre(int x, int y, GameObject ore)
     {
         if(getTile(x,y).getTileObject() == null)
         {
-            SpawnObject(ore, getTile(x, y));
+            return SpawnObject(ore, getTile(x, y),true);
         }
-
-        if(maxRange > 1)
-        {
-            if(x - 1 >= 0)
-            {
-                if(RandomizeOre()) GenerateOre(x-1,y,ore,maxRange-1);
-            }
-
-            if(x + 1 < gridSizeX)
-            {
-                if(RandomizeOre()) GenerateOre(x+1,y,ore,maxRange-1);
-            }
-
-            if(y - 1 >= 0)
-            {
-                if(RandomizeOre()) GenerateOre(x,y-1,ore,maxRange-1);
-            }
-
-            if(y + 1 < gridSizeY)
-            {
-                if(RandomizeOre()) GenerateOre(x,y+1,ore,maxRange-1);
-            }
-        }
+        return null;
     }
 
-    bool RandomizeOre()
-    {
-        int rnd = Random.Range(1,101);
-        if(rnd <= 50) return true;
-        return false;
-    }
-
-    public void SpawnObject(GameObject targetObject, Tile tile)
+    public GameObject SpawnObject(GameObject targetObject, Tile tile, bool ore = false)
     {
         GameObject newObject = Instantiate(targetObject, tile.transform.position, tile.transform.rotation);
-        //newObject.transform.SetParent(tile.transform);
-        tile.SetTileObject(targetObject);
+        tile.SetTileObject(newObject);
+        
+        if(ore) {
+            newObject.transform.Rotate(new Vector3(-90,0,0));
+            newObject.transform.position += new Vector3(0,0.05f,0);
+        }
+
+        newObject.GetComponent<TileObject>().OnSpawn();
+        
+        return newObject;
     }
-
-    public void UpdateGridWithObstacles()
-    {
-        Obstacle[] obstacles = obstaclesSpawn.GetComponentsInChildren<Obstacle>();
-
-        //for(int i = 0; i < obstacles.Length; i++)
-        //{
-            
-        //}
-    }
-
-
-
 }

@@ -5,6 +5,7 @@ public class BuildingInspectPanel : MonoBehaviour
 {
 
     [SerializeField] private TMPro.TextMeshProUGUI nameText;
+    [SerializeField] private Image buildingImage;
     [SerializeField] private TMPro.TextMeshProUGUI hpText;
     [SerializeField] private Slider hpBar;
 
@@ -15,7 +16,9 @@ public class BuildingInspectPanel : MonoBehaviour
 
     FinishedBuilding targetBuilding;
 
-    [SerializeField] private Slider miningBar;
+    [SerializeField] private Slider progressBar;
+
+    [SerializeField] private UnitRecruitQueuePanel unitRecruitQueuePanel;
 
     private bool opened = false;
     private bool miningActive = false;
@@ -32,32 +35,37 @@ public class BuildingInspectPanel : MonoBehaviour
         hpBar.maxValue = fb.getMaxHp();
         hpBar.value = fb.getHp();
 
+        buildingImage.sprite = fb.getBuildingImageSprite();
+
         demolishButton.SetActive(fb.isDemolishable());
         opened = true;
 
         if(targetBuilding.CheckBuildingType("mine"))
         {
-            miningBar.gameObject.SetActive(true);
-            miningBar.GetComponentInChildren<TMPro.TextMeshProUGUI>().text = "Mining...";
+            progressBar.gameObject.SetActive(true);
+            progressBar.GetComponentInChildren<TMPro.TextMeshProUGUI>().text = "Mining...";
             miningActive = true;
             isFactory = false;
         }
         else
         {
             isFactory = targetBuilding.CheckBuildingType("factory");
-
-            if(isFactory)
-            {
-                buildUnitsButton.SetActive(true);
-            }
-            else
-            {
-                buildUnitsButton.SetActive(false);
-            }
-
-            miningBar.gameObject.SetActive(false);
+            progressBar.gameObject.SetActive(false);
             miningActive = false;
         }
+
+        if(isFactory)
+        {
+            buildUnitsButton.SetActive(true);
+            unitRecruitQueuePanel.gameObject.SetActive(true);
+        }
+        else
+        {
+            buildUnitsButton.SetActive(false);
+            unitRecruitQueuePanel.gameObject.SetActive(false);
+        }
+
+        FindAnyObjectByType<UnitRecruitPanel>().Close();
     }
 
     public void ClosePanel()
@@ -87,23 +95,24 @@ public class BuildingInspectPanel : MonoBehaviour
 
             if(miningActive) 
             {
-                miningBar.maxValue = targetBuilding.GetComponent<Mine>().getMiningSpeed();
-                miningBar.value = targetBuilding.GetComponent<Mine>().getTimeLeft();
+                progressBar.maxValue = targetBuilding.GetComponent<Mine>().getMiningSpeed();
+                progressBar.value = targetBuilding.GetComponent<Mine>().getTimeLeft();
             }
 
             if(isFactory)
             {
                 if(targetBuilding.GetComponent<Factory>().isRecruiting())
                 {
-                    miningBar.gameObject.SetActive(true);
-                    miningBar.GetComponentInChildren<TMPro.TextMeshProUGUI>().text = "Assembling...";
-                    miningBar.maxValue = targetBuilding.GetComponent<Factory>().getAssemblySpeed();
-                    miningBar.value = targetBuilding.GetComponent<Factory>().getTimeLeft();
+                    progressBar.gameObject.SetActive(true);
+                    progressBar.GetComponentInChildren<TMPro.TextMeshProUGUI>().text = "Assembling...";
+                    progressBar.maxValue = targetBuilding.GetComponent<Factory>().getAssemblySpeed();
+                    progressBar.value = targetBuilding.GetComponent<Factory>().getTimeLeft();
                 }
                 else
                 {
-                    miningBar.gameObject.SetActive(false);
+                    progressBar.gameObject.SetActive(false);
                 }
+                unitRecruitQueuePanel.UpdateQueue(targetBuilding.GetComponent<Factory>().getRecruitedUnits());
             }
 
         }

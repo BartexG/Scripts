@@ -10,6 +10,7 @@ public class FinishedBuilding : MonoBehaviour
     [SerializeField] private int maxHp = 100;
     [SerializeField] private bool canBeDemolished = true;
     [SerializeField] private string buildingType;
+    [SerializeField] private Sprite buildingImageSprite;
     int hp = 0;
 
     [Header("Model")]
@@ -112,6 +113,7 @@ public class FinishedBuilding : MonoBehaviour
         if(buildingType == "hub")
         {
             FindAnyObjectByType<GameManage>().Lost();
+            Destroy(gameObject);
         }
         else
         {
@@ -132,6 +134,11 @@ public class FinishedBuilding : MonoBehaviour
     public float getAvgRadius()
     {
         return buildingModel.GetComponent<Building>().getAvgRadius();    
+    }
+
+    public Sprite getBuildingImageSprite()
+    {
+        return buildingImageSprite;
     }
 
 

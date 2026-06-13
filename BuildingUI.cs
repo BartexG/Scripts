@@ -1,15 +1,19 @@
 using UnityEngine;
+using UnityEngine.UI;
 
 public class BuildingUI : MonoBehaviour
 {
 
     [SerializeField] private GameObject mark;
+    [SerializeField] private Image buildingImage;
+
 
     FinishedBuilding targetBuilding;
 
     public void OnSpawn(FinishedBuilding newTargetBuilding)
     {
         targetBuilding = newTargetBuilding;
+        buildingImage.sprite = targetBuilding.getBuildingImageSprite();
     }
 
     public void Clicked()

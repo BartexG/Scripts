@@ -3,22 +3,43 @@ using UnityEngine;
 public class Ore : TileObject
 {
     public int oreID;
-    int oreCount;
+
+    private bool mined = false;
 
     public override void OnSpawn()
     {
-        oreCount = Random.Range(500,901);
+        mined = false;
+        if(oreID == 1)
+        {
+            objectType = "oil";
+        }
+        else 
+        {
+            objectType = "ore";
+        }
     }
 
     public void ExtractOre(int value)
     {
-        FindAnyObjectByType<Resources>().ChangeResource(oreID,value);
-        oreCount -= value;
-
-        if(oreCount <= 0)
+        if(FindAnyObjectByType<GameManage>().isGameActive()) 
         {
-            //...
+            FindAnyObjectByType<Resources>().ChangeResource(oreID,value);
         }
+    }
+
+    public void ChangeMinedStatus(bool value)
+    {
+        mined = value;
+    }
+
+    public int getOreID()
+    {
+        return oreID;
+    }
+
+    public bool isMined()
+    {
+        return mined;
     }
 
 }

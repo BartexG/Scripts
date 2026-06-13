@@ -3,13 +3,17 @@ using UnityEngine.AI;
 
 public class FriendlyUnit : Unit
 {
-    NavMeshAgent agent;
+    public enum friendlyUnitType {MINING, MILITARY}; 
+
+    protected NavMeshAgent agent;
 
     [SerializeField] private GameObject selectionMark;
 
-    [SerializeField] private bool militaryUnit = false;
+    [SerializeField] private friendlyUnitType unitType = friendlyUnitType.MILITARY;
 
     [SerializeField] private int price = 10;
+
+    [SerializeField] private Sprite unitSprite;
 
     bool unitSelected = false;
 
@@ -40,13 +44,12 @@ public class FriendlyUnit : Unit
 
     public void SetAttackTarget(GameObject target)
     {
-        if(militaryUnit)
+        if(unitType == friendlyUnitType.MILITARY)
         {
             gameObject.GetComponent<UnitAttackSystem>().SetAttackTarget(target, "unit");
             Stop();
         }
     }
-
 
     public void Stop()
     {
@@ -58,15 +61,19 @@ public class FriendlyUnit : Unit
 
     public void MoveForward(float multiplier)
     {
-        agent.SetDestination(transform.position + transform.forward);
+        agent.SetDestination(transform.position + transform.forward*multiplier);
     }
 
     public void SetDestination(Vector3 point)
     {
         agent.SetDestination(point);
-        if(militaryUnit)
+        if(unitType == friendlyUnitType.MILITARY)
         {
             gameObject.GetComponent<UnitAttackSystem>().SetAttackTarget(null, "");
+        }
+        else if(unitType == friendlyUnitType.MINING)
+        {
+            gameObject.GetComponent<MiningUnit>().CancelMining();
         }
     }
 
@@ -78,5 +85,15 @@ public class FriendlyUnit : Unit
     public override int getPrice()
     {
         return price;
+    }
+
+    public friendlyUnitType getUnitType()
+    {
+        return unitType;
+    }
+
+    public Sprite getUnitSprite()
+    {
+        return unitSprite;
     }
 }

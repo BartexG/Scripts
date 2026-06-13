@@ -1,22 +1,90 @@
 using UnityEngine;
+using UnityEngine.UI;
+
+class DeliveryRequest
+{
+    public int quantity;
+    public int bounty;
+    public int resID; 
+
+    public DeliveryRequest(int minQ,int maxQ,int price,int newResID)
+    {
+        quantity = Random.Range(minQ, maxQ);
+        bounty = quantity * price;
+        resID = newResID;
+    }
+}
 
 public class Market : MonoBehaviour
 {
     [SerializeField] private GameObject panel;
-    [SerializeField] private int updateTime = 3;
-    float timer = 0;
+    [SerializeField] private Color32[] resColors;
+    [SerializeField] private TMPro.TextMeshProUGUI[] deliveryQuantityTexts;
+    [SerializeField] private TMPro.TextMeshProUGUI[] deliveryBountyTexts;
+    [SerializeField] private Image[] deliveryResImages;
+    [SerializeField] private Button[] deliveryButtons;
 
-    private float[] resPrices = new float[3]; //1.00-20.00
-    [SerializeField] private TMPro.TextMeshProUGUI[] priceTexts = new TMPro.TextMeshProUGUI[3];
+    private int[] resMinQ = new int[3];
+    private int[] resMaxQ = new int[3];
 
-    [SerializeField] private Color32 upColor;
-    [SerializeField] private Color32 downColor;
-    [SerializeField] private Color32 neutralColor;
+    public int startingPrices = 10;
+    private int[] resPrices = new int[3];
 
+    DeliveryRequest[] deliveryRequests = new DeliveryRequest[2];
+
+    void Start()
+    {
+        for(int i = 0; i < 3; i++)
+        {
+            resMinQ[i]=20;
+            resMaxQ[i]=30;
+            resPrices[i]=startingPrices;
+        }
+
+        for(int i = 0; i < deliveryRequests.Length; i++)
+        {
+            //2-y,3-r,4-b
+            int randomRes = Random.Range(0,3);
+            deliveryRequests[i] = new DeliveryRequest(resMinQ[randomRes],resMaxQ[randomRes],resPrices[randomRes],randomRes+2);
+        }
+    }
+    
+    public void UpdateUI()
+    {
+        for(int i = 0; i < deliveryRequests.Length; i++)
+        {
+            deliveryQuantityTexts[i].text = "[" + deliveryRequests[i].quantity + "]";
+            deliveryBountyTexts[i].text = "Reward: " + deliveryRequests[i].bounty + "$";
+
+            deliveryResImages[i*2].color = resColors[deliveryRequests[i].resID-2];
+            deliveryResImages[i*2+1].color = resColors[deliveryRequests[i].resID-2];
+            deliveryButtons[i].GetComponent<Image>().color = resColors[deliveryRequests[i].resID-2];
+        }
+    }
+
+    public void Deliver(int id)
+    {
+        Resources resources = FindAnyObjectByType<Resources>();
+        int resID = deliveryRequests[id].resID;
+        if(resources.CheckForResource(resID,deliveryRequests[id].quantity))
+        {
+            resources.ChangeResource(resID,-deliveryRequests[id].quantity);
+            resources.ChangeMoney(deliveryRequests[id].bounty);
+
+            resMinQ[resID-2]+=5;
+            resMaxQ[resID-2]+=10;
+            resPrices[resID-2]+=1;
+
+            int randomRes = Random.Range(0,3);
+            deliveryRequests[id] = new DeliveryRequest(resMinQ[randomRes],resMaxQ[randomRes],resPrices[randomRes],randomRes+2);
+            UpdateUI();
+        }
+    }
 
     public void Open()
     {
         panel.SetActive(true);
+        UpdateUI();
     }
 
     public void Close()
@@ -24,101 +92,7 @@ public class Market : MonoBehaviour
         panel.SetActive(false);
     }
 
-    void Update()
-    {
-        timer += Time.deltaTime;
-
-        if(timer >= updateTime)
-        {
-            timer = 0;
-            UpdatePrices();
-        }
-    }
-
-    void UpdatePrices()
-    {
-        int[] changes = new int[3];
-
-        for(int i = 0; i < resPrices.Length; i++)
-        {
-            int rnd = Random.Range(1,4);
-
-            if(rnd == 1)
-            {
-                changes[i] = 0;
-            }
-            else if(rnd == 2) //up
-            {
-                resPrices[i] += 0.5f;
-                int next = i+1;
-                if(next >= resPrices.Length) next = 0;
-                resPrices[next] -= 0.5f;
-
-                changes[i] = 1;
-                if(changes[next] == 1) changes[next] = 0;
-                else changes[next] = -1;
-                
-                i++;
-            }
-            else //down
-            {
-                resPrices[i] -= 0.5f;
-                int next = i+1;
-                if(next >= resPrices.Length) next = 0;
-                resPrices[next] += 0.5f;
-
-                changes[i] = -1;
-                if(changes[next] == -1) changes[next] = 0;
-                else changes[next] = 1;
-
-                i++;
-            }
-        }
-
-        for(int i = 0; i < resPrices.Length; i++)
-        {
-            Color32 newColor = neutralColor;
-
-            switch(changes[i])
-            {
-                case -1:
-                    newColor = downColor;
-                break;
-                case 0: 
-                    newColor = neutralColor;
-                break;
-                case 1:
-                    newColor = upColor;
-                break;
-            }
-
-            priceTexts[i].color = newColor;
-        }
-
-        UpdateUI();
-    }
-
-    void UpdateUI()
-    {
-        for(int i = 0; i < resPrices.Length; i++)
-        {
-            priceTexts[i].text = resPrices[i] + "$";
-        }
-    }
-
-    void Start()
-    {
-        for(int i = 0; i < resPrices.Length; i++)
-        {
-            resPrices[i] = 10;
-        }
-        UpdateUI();
-    }
-
-    public void SellResource(int id)
-    {
-        FindAnyObjectByType<Resources>().SellResource(id+2, resPrices[id]);
-    }
+    
 
 
 }
